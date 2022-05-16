@@ -18,12 +18,12 @@ const getAllProducts = asyncWrapper(async (req, res) => {
 const getProduct = asyncWrapper (async (req, res, next) => {
     const pool = createPool()
     const searchedProductID = req.params.ID
-    const query = `SELECT * FROM Product WHERE ProductID = \'${searchedProductID}\';`
+    const query = `SELECT * FROM Product WHERE ProductID = '${searchedProductID}';`
     const productSelected = await databasePromise(pool, query)
-    if(productSelected) {
+    if(productSelected[0]) {
         return res.status(200).json({
             success: true, 
-            product: productSelected
+            product: productSelected[0]
         })
     }
     return next(createCustomError('Product Not Found', 404))
@@ -31,7 +31,7 @@ const getProduct = asyncWrapper (async (req, res, next) => {
 
 const createProduct = asyncWrapper(async (req, res, next) => {
     const pool = createPool()
-    let query = `SELECT CompanyID FROM Company WHERE CompanyName = \'${req.body.company}\';`
+    let query = `SELECT CompanyID FROM Company WHERE CompanyName = '${req.body.company}';`
     const company = await databasePromise(pool, query)
     if(!company[0]) {
         return next(createCustomError('Company Doesn\'t Exist', 404))
@@ -45,7 +45,7 @@ const createProduct = asyncWrapper(async (req, res, next) => {
     const productRating = req.body.rating || 4.5
     const featured = req.body.featured == true ? 1 : 0
     const companyID = company[0].CompanyID
-    query = `INSERT INTO Product VALUES(\'${productID}\', \'${productName}\', ${productPrice}, ${productRating}, ${featured}, \'${companyID}\')`
+    query = `INSERT INTO Product VALUES('${productID}', '${productName}', ${productPrice}, ${productRating}, ${featured}, '${companyID}')`
     await databasePromise(pool, query)
     return res.status(200).json({
         success: true, 
@@ -60,8 +60,25 @@ const createProduct = asyncWrapper(async (req, res, next) => {
     })
 })
 
+const updatePorduct = asyncWrapper(async (req, res, next) => {
+    const productID = req.body.productID
+    const changedKey = req.body.changedKey
+    const changedVal = req.body.changedVal
+
+    if(!(productID && changedKey && changedVal)) {
+        next(createCustomError('Parameter not complete', 400))
+    }
+    let query = `UPDATE Product SET ${changedKey} = ${changedVal} WHERE ProductID = '${productID}';`
+    const test = await databasePromise(createPool(), query)
+    return res.status(200).json({
+        success: true, 
+        product: test
+    })
+})
+
 module.exports = {
     getAllProducts, 
     getProduct, 
-    createProduct
+    createProduct, 
+    updatePorduct
 }

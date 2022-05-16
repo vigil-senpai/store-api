@@ -1,8 +1,7 @@
-const notFound = (req, res) => {
-    res.status(404).json({
-        success: false, 
-        message: 'Route not found'
-    })
+const { createCustomError } = require("../error/custom-error")
+
+const notFound = (req, res, next) => {
+    return next(createCustomError('Route not Found', 404))
 }
 
 module.exports = notFound
