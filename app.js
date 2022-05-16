@@ -16,13 +16,17 @@ app.use('/api/v1/products', productsRouter)
 app.use(notFound)
 app.use(customErrorHandler)
 
-app.listen(port, async () => {
+startServer = async () => {
     try {
-        await connectDatabase()
-        console.log('[+] Connection Success')
-        console.log(`[+] Server Listening on Port ${port}`)
+        app.listen(port, async () => {
+            await connectDatabase()
+            console.log('[+] Connection Success')
+            console.log(`[+] Server Listening on Port ${port}`)
+        })
     }
     catch (error) {
         console.log('[-] Connection Failed')
     }
-})
+}
+
+startServer()
