@@ -69,10 +69,24 @@ const updatePorduct = asyncWrapper(async (req, res, next) => {
         next(createCustomError('Parameter not complete', 400))
     }
     let query = `UPDATE Product SET ${changedKey} = ${changedVal} WHERE ProductID = '${productID}';`
-    const test = await databasePromise(createPool(), query)
+    await databasePromise(createPool(), query)
+    query = `SELECT * FROM Product WHERE ProductID = '${productID}'`
+    const product = await databasePromise(createPool(), query)
     return res.status(200).json({
         success: true, 
-        product: test
+        product: product
+    })
+})
+
+const deleteProduct = asyncWrapper(async(req, res, next) => {
+    const productID = req.body.productID
+    if(!productID) {
+        next(createCustomError('Product ID Needed', 400))
+    }
+    let query = `DELETE FROM Product WHERE ProductID = '${productID}'`
+    await databasePromise(createPool(), query)
+    return res.status(200).json({
+        success: true
     })
 })
 
@@ -80,5 +94,6 @@ module.exports = {
     getAllProducts, 
     getProduct, 
     createProduct, 
-    updatePorduct
+    updatePorduct, 
+    deleteProduct
 }
